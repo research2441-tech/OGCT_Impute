@@ -1,0 +1,85 @@
+seed: 42
+device: auto
+output_dir: results
+
+data:
+  path: data.npz
+  sampling_rate: 256
+  target_sampling_rate: 256
+  window_seconds: 4.0
+  window_overlap: 0.5
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  subject_key: subject_id
+  signal_key: X
+
+preprocessing:
+  bandpass_low_hz: 0.5
+  bandpass_high_hz: 45.0
+  notch_hz: 50.0
+  robust_clip_std: 8.0
+  normalize: zscore
+
+missingness:
+  types: [random, segment, channel, mixed]
+  ratios: [0.10, 0.20, 0.30, 0.40, 0.50, 0.60]
+  train_ratio_min: 0.10
+  train_ratio_max: 0.50
+  segment_lengths_seconds: [0.5, 1.0, 2.0, 3.0, 5.0]
+  channel_counts: [1, 2, 4, 6, 8]
+
+model:
+  d_model: 96
+  cnn_kernel_size: 7
+  cnn_layers: 3
+  temporal_heads: 4
+  temporal_layers: 3
+  channel_heads: 4
+  dropout: 0.15
+  ff_multiplier: 4
+
+loss:
+  reconstruction: 1.0
+  temporal: 0.20
+  spectral: 0.15
+  channel: 0.10
+
+training:
+  epochs: 100
+  batch_size: 32
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  gradient_clip: 1.0
+  patience: 15
+  num_workers: 0
+  amp: true
+
+pso:
+  enabled: true
+  population_size: 8
+  iterations: 10
+  fitness_epochs: 12
+  inertia: 0.729
+  cognitive: 1.49445
+  social: 1.49445
+  patience: 3
+  tolerance: 0.0001
+  bounds:
+    cnn_kernel_size: [3, 15]
+    d_model: [48, 192]
+    temporal_heads: [2, 8]
+    temporal_layers: [1, 5]
+    learning_rate: [0.0001, 0.003]
+    dropout: [0.05, 0.40]
+    loss_temporal: [0.05, 0.50]
+    loss_spectral: [0.05, 0.50]
+    loss_channel: [0.01, 0.30]
+
+evaluation:
+  repetitions: 5
+  overall_missingness: mixed
+  overall_ratio: 0.30
+  bootstrap_samples: 1000
+  confidence_level: 0.95
+  downstream_task: binary
